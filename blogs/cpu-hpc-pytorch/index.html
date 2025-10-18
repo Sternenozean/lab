@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+
+	<script>
+	</script>
+	<style>
+
+	.sidenav {
+  width: 110px;
+  position: fixed;
+  z-index: 1;
+  top: 30px;
+  left: 10px;
+  background: white;
+  overflow-x: hidden;
+  padding: 8px 0;
+	font-size: 11px;
+}
+
+.sidenav a {
+  padding: 3px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 11px;
+  color: #aaaaaa;
+  display: block;
+	align: left;
+}
+
+.sidenav a:hover {
+  color: ##3176FE;
+}
+
+
+
+	body {
+		line-height: 1.5;
+		padding: 20px;
+		box-shadow: 5px 5px 5px #aaaaaa;
+	  text-align: justify;
+	  color: #555555;
+	  font-family: Arial, Helvetica, sans-serif;
+		font-size:16px;
+	  max-width: 650px;
+	  min-width: 650px;
+	  width: auto;
+	  width:650px;
+	  margin: auto;
+	  bottom: 10px;
+	  background-repeat: no-repeat; /* Do not repeat the image */
+	  background-image: url('img/bg.jpg');
+	  background-size: cover;
+	  top: 40px;
+	  z-index: -1;
+	  display: block;
+	}
+
+	.color1 {
+	  color: #99ccff;
+	  font-weight: bold;
+
+	}
+	.color2 {
+	  color: #E4974E;
+	}
+
+	a {
+	  color: ##377ED9;
+	}
+
+	a:hover {
+	  color: #222222;
+	}
+
+	code{
+		background-color: #DAE7F8;
+	}
+
+
+	img{
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.article{
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	  font-weight: bold;
+	  font-size: 14px;
+	  pad: 3px;
+	}
+
+	.article:hover {
+	  color: #333333;
+	  background-color: #eeeeee;
+	  transition-delay: 0.02s;
+	}
+
+	.list {
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	}
+
+	.container{
+	  margin-top:120px;
+	}
+
+	.prettyprint{
+		font-size: 13px;
+		background-color: #EFF4FF;
+	}
+
+	.cap{
+		max-width: 500px;
+		width: 500px;
+		font-size: 15px;
+		font-style: italic;
+		margin: auto;
+	}
+
+	#titlebar{
+	  opacity: 1.0;
+	  z-index: 10;
+	  cursor: grab;
+	  background-image: linear-gradient(#e5e4e5, #cecece);
+		max-width: 600px;
+	  min-width: 600px;
+	  height: 22px;
+	  border-radius: 0px;
+	}
+
+
+
+	#frame{
+	  position: absolute;
+	  margin-top: 2px;
+	  background-color: #000000;
+	  opacity: 0.8;
+	  max-width: 600px;
+	  min-width: 600px;
+	  height: 350px;
+	  border-radius: 5px;
+	  z-index: 9;
+	  font-size: 12px;
+	  text-align: left;
+	}
+
+	#courtesy{
+	  font-size: 12px;
+		font-style: italic;
+	}
+
+	</style>
+</head>
+<body>
+
+	<div class="sidenav">
+	  <a href="#bg">Background</a>
+	  <a href="#md">Method / result</a>
+	  <a href="#th">Some thoughts</a>
+	</div>
+
+
+
+<h1>
+	Improving Parallellization Performance for CPU based PyTorch
+</h1>
+
+<h4><a name='bg'>Some backgrounds</a></h4>
+
+<!-- <p>
+Recently I've been informed by my supervisor that one of my deep learning implementation optimizations for HPC has been requested and used to help a computing center (LRZ: Leibniz-Rechenzentrum) to evaluate / benchmark their next generation computing node (supermuc-ng 2). I am very glad I can help, I would like to write a blog to share my method to help the community.
+</p> -->
+
+
+<p>
+The low efficiency of the CPU version PyTorch for HPC remains an unsolved issue, for example, launching a job in one node, puting all 48 CPUs into computation would only get you ~ 4 to 8 times speed up (depends on CNN architecture). Via <code>htop</code>, I found that all CPUs are indeed in computation, that means the threads are correctly spreaded, but the saturation effect comes too early. Conventionally, there are two solutions from system level: (1) launching job in the way of fixing CPU affinity, or (2) setting the NUMA (non-uniform memory access). However, after testing them, I found out none of the methods gained more than 5% increment for the performance. I guess one possible reason could be that affinity / NUMA will facilitate the performance for simple computation, but for massive matrix manipulations, those system level solutions probably will not be able to contribute that much to the speed. I grabed a picture from PyTorch official docs <a href="https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html?highlight=cpu%20threading">here</a>
+, which seems to be a common issue already. </p>
+	<img src="https://pytorch.org/docs/stable/_images/cpu_threading_runtimes.svg" width="400">
+
+<p>
+	In this article I'd like to share my method for solving this issue. Please note it is aiming at improving the performance for parallelization in a shared memory system instead of the single-core computer, as single-core performance is a rather well solved issue (e.g. MKL-DNN, C++ based solution). If you are experiencing the same issue while working on inferencing very high resolution images (let's say, with 1E8 pixels) with PyTorch CPU version, this should help you.
+</p>
+
+
+<h4><a name='md'>Method and result</a></h4>
+
+<p>
+First of all, let's take a look at the software configurations:</p>
+
+<pre class="prettyprint">Python 3.6.8
+PyTorch (version 1.3.0) built with :
+- GCC 7.3
+- Intel MKL 2019.04 for Intel 64 architecture
+- Intel MKL-DNN 0.20.5
+- OpenMP 4.5
+- NNPACK enabled
+- BLAS = MKL
+</pre>
+
+and some specs of the test machine with 96 GB ram:
+<pre class="prettyprint">
+model name      : Intel(R) Xeon(R) Platinum 8174 CPU @ 3.10GHz
+stepping        : 4
+cache size      : 33792 KB
+siblings        : 48
+</pre>
+
+you can see PyTorch is indeed OpenMP and MKL-DNN built instead of the CUDA based, (meaning it is CPU based built). Assume we are about to inference on a high resolution image, as mentioned previously if we purely rely on the OpenMP (which is the default parallellization solution) with few system level tricks, we wouldn't get much performance speedup. So from now on we completely abandon the OpenMP by editing the corresponding environment variables in the python script and set the number of PyTorch threads to 1 as follow (in case we have set the CPU affinity/binding previously, let's also remove it).
+<pre class="prettyprint">
+os.environ['OMP_NUM_THREADS'] = '1'
+torch.set_num_threads(1)
+</pre>
+
+<p>OK, now we enter the domain that allow us to develop our own parallelization code. A very natural mind came up to me is spawning 48 processes (yes, processes insteads of threads), so that each process and its corresponding memory space is independent (yes, sounds like CPU-RAM affinity). In order to do so, after loading the image into numpy array, we can split the array into 48 partitions, and assign each partition to a single CPU to isolate the memory space.</p>
+
+<img src="img/cpu_ram.png" width="300">
+<div class='cap'>
+Partitions of the input image, color indicates the index of CPU [0-47], the black area indicates where no valid data in the original input.
+</div>
+
+<p>
+	An important point is spawning multiple processes (memory isolated) is not identical to multithreading (memory shared within parent process).  Now we need to pin each memory space for a single CPU (otherwise we will not gain higher performance than OpenMP), there are handful ways for implementation, but the python <code>map</code> based methods seems not working for me. I suggest to write the PyTorch inference code (mainly the iteration part) as a function and spawn it into 48 process by using <code>multiprocessing.Process()</code> method as the code below indicates.
+</p>
+
+
+<pre class="prettyprint">
+import psutil
+import torch.nn.functional as F
+import multiprocessing as mp
+
+def model_IO_cpu_pin(cood, pubobj, model, affinity):
+    proc = psutil.Process()
+    proc.cpu_affinity(affinity)
+    nbatch = len(cood)
+    with torch.no_grad():
+        for i in range(nbatch):
+            tomod = from_cood_2_sampbatch(cood[i]) # I defined for batch array
+            tomod = torch.from_numpy(tomod)
+            tomod = F.interpolate(tomod, size=(224,224))
+            ......
+if __name__ == '__main__':
+    allprocs = []
+    for cpu in range(48):
+        affi = dict(affinity=[cpu])
+        p = mp.Process(target=model_IO_cpu_pin, args= (coodcpu[cpu], \
+            zeros_lcz_map_sm, model, ), kwargs=affi)
+        p.start()
+        allprocs.append(p)
+    for p in allprocs:
+        p.join()
+</pre>
+
+<p>The code clause above basically implement the process generation for each physical CPU to be computed independently, just in case you are curious about the <code>pubobj</code> in the code, it is a publically writeable object for each process, I use the <code>numpy.ctypeslib</code> to create the ctype array to pass it as the argument.
+
+So back to our topic, what exactly happened when we run it? I put a <code>htop</code> screenshot here, from which you can see that indeed 48 processes have been allocated for each physical CPU. </p>
+
+<img src="img/htop.png" width="400">
+<div class='cap'>
+You might wonder why another half of the slots are in sleep, it is because another half are actually the hyper threadings, running one process on one physical core is exactly what we need, so that the CPU running time is 100% concentrated on 1 task.
+</div>
+
+
+<p>
+To briefly introduce my benchmark method, I generated ~ 4 million image patches with resolution 224 x 224 pixels, then I use the Resnet18 with customized FC class number to compute these patches in MKL-DNN domain and measure the running time to evaluate the performance for different number of CPUs. I use this method to measure the parallellization performance of the default parallelizatoin and my proposed method. The full benchmark results are illustrated below.
+</p>
+
+
+<img src="img/cpu-benchmark.png" width="400">
+<p>
+Isn't the result amazing! For the default parallelization, the saturation effects started with 16 CPUs, and eventually there is only maximum ~ 4 x speed up compared with single CPU, meaning you basically waste a tremendous amount of computational resources. However for my proposed menthod, the performance is nearly linearally propotinal to the number of CPUs, which is ~ 10 x faster than the default solution. Our design and implementation works.
+</p>
+<!--
+<p>
+ Just in case you are interested, the sicientific result of this computation is the classification map for a remote area near Tokyo.
+</p>
+
+<img src="img/tk_demo.png" width="350"> -->
+
+<h4><a name='th'>Some thoughts</a></h4>
+
+
+<p>
+I am actually rather curious about the deeper reason why the PyTorch with OpenMP somehow is significant slower than the theoretical max. I think, firstly, the default is threads based parallelization; secondly, OpenMP specification is rather complicated, and not much people use CPU based PyTorch, so the optimization of CPU version didn't gain much attention. However, I would assume, the availability of the industrial grade GPU (e.g. Nvidia P100/V100/A100) in most of the data centers is still lower than the CPU based computing resources, so I think it worth to excavate the potentials from CPU based architecture for deep learning community, especially when it comes with big data. (last edit: 2021)
+</p>
+
+<p id='courtesy'>
+		Created by Cong in 2021.
+</p>
+</body>
+</html>

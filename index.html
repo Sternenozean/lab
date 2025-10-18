@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+  <meta name="robots" content="noindex, nofollow">
+
+  <script>
+  // dragElement(document.getElementById("frame"));
+  function dragElement(elmnt) {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    if (document.getElementById("titlebar")) {
+      document.getElementById("titlebar").onmousedown = dragMouseDown;
+    } else {
+      elmnt.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+      elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+      elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+      /* stop moving when mouse button is released:*/
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
+
+  function startTime() {
+    var today = new Date();
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    var s = today.getSeconds();
+    m = checkTime(m);
+    s = checkTime(s);
+    document.getElementById('time').innerHTML = '&nbsp Local time:  ' +  date + ' ' +
+    h + ":" + m + ":" + s;
+    var t = setTimeout(startTime, 500);
+  }
+
+  function checkTime(i) {
+    if (i < 10) {i = "0" + i};
+    return i;
+  }
+
+  function initDrag() {
+    dragElement(document.getElementById("frame"));
+  }
+
+  function move() {
+    var elem = document.getElementById("myBar");
+    var width = 1;
+    var id = setInterval(frame, 10);
+    function frame() {
+      if (width >= 100) {
+        clearInterval(id);
+      } else {
+        width++;
+        elem.style.width = width + '%';
+      }
+    }
+  }
+
+  window.onload = function() {
+  dragElement(document.getElementById("frame"));
+  startTime();
+};
+</script>
+<title>SternenOzean Lab</title>
+<style>
+
+body {
+  text-align: center;
+  color: #aaaaaa;
+  font-family: Arial, Helvetica, sans-serif;
+  max-width: 600px;
+  min-width: 600px;
+  width: auto;
+  width:600px;
+  margin: auto;
+  bottom: 10px;
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-image: url('img/bg.jpg');
+  background-size: cover;
+  top: 40px;
+  z-index: -1;
+  display: block;
+}
+
+.circle1 {
+  position: relative;
+  top: 7px;
+  left: 5px;
+  height: 10px;
+  width: 10px;
+  background-color: #fc5a59;
+  border-radius: 50%;
+}
+
+.circle2 {
+  position: relative;
+  /* top: 5px; */
+  left: 20px;
+  height: 10px;
+  width: 10px;
+  background-color: #fec131;
+  border-radius: 50%;
+}
+
+.circle3 {
+  position: relative;
+  /* top: 5px; */
+  left: 20px;
+  height: 10px;
+  width: 10px;
+  background-color: #37d342;
+  border-radius: 50%;
+}
+
+.color1 {
+  color: #99ccff;
+  font-weight: bold;
+}
+
+.color2 {
+  color: #f7983f;
+}
+
+a {
+  color: #99ccff;
+}
+
+a:hover {
+  color: #222222;
+}
+
+.article{
+  margin: auto;
+  max-width: 500px;
+  margin-top:10px;
+  font-weight: bold;
+  font-size: 14px;
+  pad: 3px;
+}
+
+.article:hover {
+  color: #333333;
+  background-color: #eeeeee;
+  transition-delay: 0.02s;
+}
+
+.list {
+  margin: auto;
+  max-width: 500px;
+  margin-top:10px;
+}
+
+.container{
+  margin-top:120px;
+}
+
+#titlebar{
+  z-index: 10;
+  cursor: grab;
+  background-image: linear-gradient(#e5e4e5, #cecece);
+	max-width: 600px;
+  min-width: 600px;
+  height: 22px;
+  border-radius: 0px;
+  opacity: 1.0;
+  /* z-index: 1; */
+}
+
+
+
+#frame{
+  position: absolute;
+  margin-top: 2px;
+  background-color: #000000;
+  opacity: 0.8;
+  max-width: 600px;
+  min-width: 600px;
+  height: 400px;
+  border-radius: 5px;
+  z-index: 9;
+  font-size: 12px;
+  text-align: left;
+}
+
+#courtesy{
+  font-size: 11px;
+  color: #ffffff;
+  position: absolute;
+  bottom: 30px;
+}
+
+#time{
+position: relative;
+bottom: 0px;
+}
+
+
+
+
+
+}
+</style>
+</head>
+
+
+<body onload="startTime(); ">
+
+<div class='container'>
+<div id='frame'>
+
+<div id='titlebar'>
+  <div class = 'circle1'>
+      <div class = 'circle2'>
+       <div class = 'circle3'>
+       </div>
+      </div>
+  </div>
+</div>
+
+
+<div id= 'time' style="color:#8EFF35"> </div>
+
+<div class = 'list'>
+ "Two things fill the mind with ever new and increasing admiration: the starry night above me and moral law within me." — Immanuel Kant.
+</div>
+
+<div class = 'list'>
+My name is Cong. I am currently working as a research software engineer in quantum computing. I also conduct independent research in quantum machine learning (QML) and hope to transition into this field.
+</div>
+
+<div class = 'list'>
+This page was created since 2020 (initially on Gitlab), to share some of my research results, knowledge and thoughts. These insights might be helpful for others when tackling <span class='color1'> HPC </span>, <span class='color1'> deep learning </span> and <span class='color1'> quantum computing</span> related issues.  <span class='color2'>Only my own work</span> is featured, <span class='color2'>no job related confidential material</span> is included in this site.
+</div>
+<div class = 'article'>
+  <a href="blogs/qcl_reproduce_QNN/">Some Practice with Gate-based Quantum Neural Networks (QNNs)</a>
+</div>
+<div class = 'article'>
+  <a href="blogs/cpu-hpc-pytorch/">Improving Parallelization Performance for CPU-based PyTorch</a>
+</div>
+<div class = 'article'>
+<a href="blogs/integrated-HPC-earthquake-simulation-environment/">An Integrated Web and HPC-based Earthquake Simulation Environment</a>
+</div>
+<div class = 'article'>
+<a href="blogs/magnetohydrodynamic-simulation-solrwind/">Magnetohydrodynamic Simulation of Plasma-Magnetosphere Interaction
+</a>
+</div>
+<div class = 'article'>
+  <a href="blogs/dl-satellite-classification-pt1/"> Big Data Driven Deep Learning for Large Scale Inferencing
+  </a>
+</div>
+<div class = 'article'>
+  <a href="blogs/big-job-array-hpc/"> Software  Development for Big Job Array From a HPC User's Perspective
+  </a>
+</div>
+</div>
+</div>
+
+<p id ="courtesy">Creator: Cong L.| All rights reserved. | Background image courtesy of Google.</p>
+</body>
+</html>

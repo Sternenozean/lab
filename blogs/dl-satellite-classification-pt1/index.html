@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+
+
+	<style>
+
+
+	.tg  {border-collapse:collapse;border-spacing:0;margin-left:auto;margin-right:auto;}
+	.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+	  overflow:hidden;padding:3px 10px;word-break:normal;}
+	.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+	  font-weight:normal;overflow:hidden;padding:3px 10px;word-break:normal;}
+	.tg .tg-l36l{background-color:#f1f6fe;border-color:#9b9b9b;color:#343434;font-family:"Courier New", Courier, monospace !important;;
+	  font-weight:bold;text-align:left;vertical-align:top}
+
+
+	.sidenav {
+  width: 110px;
+  position: fixed;
+  z-index: 1;
+  top: 30px;
+  left: 10px;
+  background: white;
+  overflow-x: hidden;
+  padding: 8px 0;
+	font-size: 11px;
+}
+
+.sidenav a {
+  padding: 3px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 11px;
+  color: #aaaaaa;
+  display: block;
+	align: left;
+}
+
+.sidenav a:hover {
+  color: ##3176FE;
+}
+
+
+
+	body {
+		line-height: 1.5;
+		padding: 20px;
+		box-shadow: 5px 5px 5px #aaaaaa;
+	  text-align: justify;
+	  color: #555555;
+	  font-family: Arial, Helvetica, sans-serif;
+		font-size:16px;
+	  max-width: 650px;
+	  min-width: 650px;
+	  width: auto;
+	  width:650px;
+	  margin: auto;
+	  bottom: 10px;
+	  background-repeat: no-repeat; /* Do not repeat the image */
+	  background-image: url('img/bg.jpg');
+	  background-size: cover;
+	  top: 40px;
+	  z-index: -1;
+	  display: block;
+	}
+
+	.color1 {
+	  color: #99ccff;
+	  font-weight: bold;
+
+	}
+	.color2 {
+	  color: #E4974E;
+	}
+
+	a {
+	  color: ##377ED9;
+	}
+
+	a:hover {
+	  color: #222222;
+	}
+
+	code{
+		background-color: #DAE7F8;
+	}
+
+
+	img{
+		/* display: block; */
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	table{
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.article{
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	  font-weight: bold;
+	  font-size: 14px;
+	  pad: 3px;
+	}
+
+	.article:hover {
+	  color: #333333;
+	  background-color: #eeeeee;
+	  transition-delay: 0.02s;
+	}
+
+	.list {
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	}
+
+	.container{
+	  margin-top:120px;
+	}
+
+	.prettyprint{
+		font-size: 13px;
+		background-color: #EFF4FF;
+	}
+
+	.cap{
+		max-width: 500px;
+		width: 500px;
+		font-size: 15px;
+		font-style: italic;
+		margin: auto;
+	}
+
+	#titlebar{
+	  opacity: 1.0;
+	  z-index: 10;
+	  cursor: grab;
+	  background-image: linear-gradient(#e5e4e5, #cecece);
+		max-width: 600px;
+	  min-width: 600px;
+	  height: 22px;
+	  border-radius: 0px;
+	}
+
+
+
+	#frame{
+	  position: absolute;
+	  margin-top: 2px;
+	  background-color: #000000;
+	  opacity: 0.8;
+	  max-width: 600px;
+	  min-width: 600px;
+	  height: 350px;
+	  border-radius: 5px;
+	  z-index: 9;
+	  font-size: 12px;
+	  text-align: left;
+	}
+
+	#courtesy{
+	  font-size: 12px;
+		font-style: italic;
+	}
+
+	</style>
+</head>
+<body>
+
+	<div class="sidenav">
+	  <a href="#bg">Background</a>
+	  <a href="#md">Big data</a>
+	  <a href="#th">Performance</a>
+	</div>
+
+
+
+<h1>
+	Big data driven deep learning for large scale inferencing
+</h1>
+
+<h4><a name='bg'>Background</a></h4>
+
+<p>
+I have been writing a research paper about a project aims at training a deep learning model using big data (satellite images) to classify the ground features at large scale (not globally, but covered major land areas). The first half stage of this project is finished and can be published, I played the role of the main contributor in this project, more specifically, big data processing (over 1 million image patches generation from 8.6 TB remote sensing data), scientific issue solving during training/inferencing on HPC and scientific "full stack" developer. During manual scripting the paper, I generated some "side" figures that look interesting, in this blog I will present them, and of course only present my own work.
+</p>
+
+<h4><a name='md'>Big data</a></h4>
+<p>Some interesting facts about the data.</p>
+
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-l36l">Input data volume</th>
+    <th class="tg-l36l">~ 8.6 TB</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-l36l">Scale</td>
+    <td class="tg-l36l">Global</td>
+  </tr>
+  <tr>
+    <td class="tg-l36l">Output DL samples</td>
+    <td class="tg-l36l">~ 1.3 M pacthes</td>
+  </tr>
+  <tr>
+    <td class="tg-l36l">Network</td>
+    <td class="tg-l36l">customized resnet</td>
+  </tr>
+</tbody>
+</table>
+
+
+
+<!-- <p><img src="img/patch.png" width="500">
+<div class='cap'>
+</div>
+</p> -->
+
+<p>
+	<img src="img/patch3d.png" width="600">
+	<div class='cap'>
+		Some visualization of part of the dataset. Axis represent input region and class index.
+	</div>
+</p>
+
+<P>
+I was using Python's multiprocessing on a 48 cores machine to process the data, it was smooth and easy, however one special points is how one would group the generated training samples in disk, because it seems Pytorch / Tensorflow would significantly reduce the training speed when it comes to over 1 million training samples. I think there must be a handful methods, I worked out a method is splitting the training dataset into multiple <code>H5</code> files, which would guarantee the normal training speed,  but that also means you should properly index the samples from each H5 file for the random number generate by the data generator.
+</p>
+
+
+<h4><a name='bg'>Performance</a></h4>
+
+Below is a unnormalized confusion matrix for a testing training model.
+
+
+<p>
+	<img src="img/cf.png" width="550">
+</p>
+
+<img src="img/acf1.png" width="600">
+<div class='cap'>
+	The F1-score and accuracy are ploted against the number of training samples for each class.
+</div>
+
+<h4><a name='th'>Some interactive fun visualizations</a></h4>
+
+<iframe src="./munich/index.html" height="300" width="300" title="Iframe Example"></iframe>
+<iframe src="./san/index.html" height="300" width="300" title="Iframe Example"></iframe>
+<div class='cap'>
+	The inference results for Munich area (left) and San Francisco area (right) on a simple interactive map, the recall/ precision for each city read 0.93/0.92 and 0.93/0.94 respectively.
+</div>
+
+<p>Merry Christmas! </p>
+
+<p id='courtesy'>
+		Created by Cong in 12.2020. Merry Christmas 🎄
+</p>
+</body>
+</html>

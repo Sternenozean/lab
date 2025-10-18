@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+	<!-- <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script> -->
+	<style>
+
+	.sidenav {
+  width: 110px;
+  position: fixed;
+  z-index: 1;
+  top: 30px;
+  left: 10px;
+  background: white;
+  overflow-x: hidden;
+  padding: 8px 0;
+	font-size: 11px;
+}
+
+.sidenav a {
+  padding: 3px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 11px;
+  color: #aaaaaa;
+  display: block;
+	align: left;
+}
+
+.sidenav a:hover {
+  color: #3176FE;
+}
+
+p {
+  margin-top:  20 px;
+  margin-bottom: 20 px;
+}
+
+	body {
+		line-height: 1.5;
+		padding: 20px;
+		box-shadow: 5px 5px 5px #aaaaaa;
+	  text-align: justify;
+	  color: #555555;
+	  font-family: Georgia, 'Times New Roman', Times, serif, Arial, Helvetica, sans-serif;
+		font-size:15px;
+	  max-width: 650px;
+	  min-width: 650px;
+	  width: 650px;
+	  margin: auto;
+	  bottom: 10px;
+	  background-repeat: no-repeat; /* Do not repeat the image */
+	  background-image: url('img/bg.jpg');
+	  background-size: cover;
+	  top: 40px;
+	  z-index: -1;
+	  display: block;
+	}
+
+	.color1 {
+	  color: #99ccff;
+	  font-weight: bold;
+
+	}
+
+	.color2 {
+	  color: #E4974E;
+	}
+
+	a {
+	  color: #2682fa;
+	}
+
+	a:hover {
+	  color: #222222;
+	}
+
+	code{
+		background-color: #DAE7F8;
+	}
+
+	img{
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.article{
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top: 10px;
+	  font-weight: bold;
+	  font-size: 14px;
+	  pad: 3px;
+	}
+
+	.article:hover {
+	  color: #333333;
+	  background-color: #eeeeee;
+	  transition-delay: 0.02s;
+	}
+
+	.list {
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	}
+
+	.container{
+	  margin-top:120px;
+	}
+
+	.prettyprint{
+		font-size: 13px;
+		background-color: #EFF4FF;
+	}
+
+	.cap{
+		max-width: 500px;
+		width: 500px;
+		font-size: 14px;
+		/* font-style: italic; */
+		margin: auto;
+		font-family: Georgia, 'Times New Roman', Times, serif;
+		margin-bottom: 50 px;
+
+	}
+
+	#titlebar{
+	  opacity: 1.0;
+	  z-index: 10;
+	  cursor: grab;
+	  background-image: linear-gradient(#e5e4e5, #cecece);
+		max-width: 600px;
+	  min-width: 600px;
+	  height: 22px;
+	  border-radius: 0px;
+	}
+
+	#frame{
+	  position: absolute;
+	  margin-top: 2px;
+	  background-color: #000000;
+	  opacity: 0.8;
+	  max-width: 600px;
+	  min-width: 600px;
+	  height: 350px;
+	  border-radius: 5px;
+	  z-index: 9;
+	  font-size: 12px;
+	  text-align: left;
+	}
+
+	#courtesy{
+	  font-size: 12px;
+		font-style: italic;
+	}
+
+	</style>
+</head>
+<body>
+
+	<!-- <div class="sidenav">
+	  <a href="#bg">Reproducing</a>
+	  <a href="#md">Method / result</a>
+	  <a href="#th">Some thoughts</a>
+	</div> -->
+
+<h3>
+	Some Practice with Gate-based Quantum Neural Networks (QNNs)
+</h3>
+
+
+<h4>
+	Reproducing
+</h4>
+<p>
+I am currently working on reproducing results from some paper in quantum neural networks (QNNs). One of the pioneering works is <strong>Quantum Circuit Learning</strong>, published by Kosuke Mitarai et al. in 2019. I believe this paper was among the first to discuss the theoretical foundation of using variational quantum circuits as the quantum counterpart of classical feedforward neural networks, including the exact gradient computation via the <strong>parameter-shift rule</strong>. I reproduced some results as shown below.
+</p>
+
+ <img src="img/qcl_original_result.png" width="400">
+
+ <div class='cap'>
+	This is the original result for 4 logistic regression task from the paper. The figure is taken directly from the paper.
+ </div>
+ <br>
+
+ <img src="img/reproduce_results.png" width="400">
+ <div class='cap'>
+	Reproduced results using an ideal simulator and a fake backend.
+ </div>
+ <br>
+
+ <img src="img/iqm_results.png" width="300">
+ <div class='cap'>
+	Trained the circuit with a <strong>real QPU</strong> 🤩 (from IQM). Due to the limited QPU time under the free plan, I could only train one signal at the time.
+ </div>
+
+ <h4>
+	Compare with MLP 
+</h4>
+<p>
+	I trained a 1–5–5–1 MLP for comparison with the QNN results. The training and testing loss histories are shown below.
+</p>
+ <img src="img/basis_function_1a.png" width="600">
+ <div class='cap'>
+	Comparison between the training dynamics from MLP and QNN. For theoretical analysis, the expectation value was calculated directly from the statevector.
+ </div>
+
+ <h4>
+	Quantum LSTM: meet the real world with your classical counterpart
+</h4>
+<p>
+	There are some works introducing Ansätze for time-series data prediction. I am aware of a paper on the Quantum Long Short-Term Memory (Quantum LSTM). However, since it does not include real-world applications, I tested it with real-world data: the Financial Times Stock Exchange (FTSE), and compared the results with a classical LSTM.
+</p>
+ <img src="img/ftse_results.png" width="600">
+ <div class='cap'>
+
+The daily FTSE dataset consists of 5,000 points. The same training strategy was applied to both the classical and quantum LSTM. 
+
+ </div>
+
+<p id='courtesy'>
+	Created by Cong in 2025, All rights reserved.
+</p>
+</body>
+</html>

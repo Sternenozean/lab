@@ -1,0 +1,9 @@
+.warp {
+  max-width: 600px;
+  margin: auto;
+}
+
+#titlebar{
+  background-color: #eeeeee;
+	max-width: 800px;
+}

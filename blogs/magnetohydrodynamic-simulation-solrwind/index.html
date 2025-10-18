@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+	<style>
+
+	.sidenav {
+  width: 110px;
+  position: fixed;
+  z-index: 1;
+  top: 30px;
+  left: 10px;
+  background: white;
+  overflow-x: hidden;
+  padding: 8px 0;
+	font-size: 11px;
+}
+
+.sidenav a {
+  padding: 3px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 11px;
+  color: #aaaaaa;
+  display: block;
+	align: left;
+}
+
+.sidenav a:hover {
+  color: ##3176FE;
+}
+
+
+
+	body {
+		line-height: 1.5;
+		padding: 20px;
+		box-shadow: 5px 5px 5px #aaaaaa;
+	  text-align: justify;
+	  color: #555555;
+	  font-family: Arial, Helvetica, sans-serif;
+		font-size:16px;
+	  max-width: 650px;
+	  min-width: 650px;
+	  width: auto;
+	  width:650px;
+	  margin: auto;
+	  bottom: 10px;
+	  background-repeat: no-repeat; /* Do not repeat the image */
+	  background-image: url('img/bg.jpg');
+	  background-size: cover;
+	  top: 40px;
+	  z-index: -1;
+	  display: block;
+	}
+
+	.color1 {
+	  color: #99ccff;
+	  font-weight: bold;
+
+	}
+	.color2 {
+	  color: #E4974E;
+	}
+
+	a {
+	  color: ##377ED9;
+	}
+
+	a:hover {
+	  color: #222222;
+	}
+
+	code{
+		background-color: #DAE7F8;
+	}
+
+
+	img{
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.article{
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	  font-weight: bold;
+	  font-size: 14px;
+	  pad: 3px;
+	}
+
+	.article:hover {
+	  color: #333333;
+	  background-color: #eeeeee;
+	  transition-delay: 0.02s;
+	}
+
+	.list {
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	}
+
+	.container{
+	  margin-top:120px;
+	}
+
+	.prettyprint{
+		font-size: 13px;
+		background-color: #EFF4FF;
+	}
+
+	.cap{
+		max-width: 500px;
+		width: 500px;
+		font-size: 15px;
+		font-style: italic;
+		margin: auto;
+	}
+
+	#titlebar{
+	  opacity: 1.0;
+	  z-index: 10;
+	  cursor: grab;
+	  background-image: linear-gradient(#e5e4e5, #cecece);
+		max-width: 600px;
+	  min-width: 600px;
+	  height: 22px;
+	  border-radius: 0px;
+	}
+
+
+
+	#frame{
+	  position: absolute;
+	  margin-top: 2px;
+	  background-color: #000000;
+	  opacity: 0.8;
+	  max-width: 600px;
+	  min-width: 600px;
+	  height: 350px;
+	  border-radius: 5px;
+	  z-index: 9;
+	  font-size: 12px;
+	  text-align: left;
+	}
+
+	#courtesy{
+	  font-size: 12px;
+		font-style: italic;
+	}
+
+	</style>
+</head>
+<body>
+<!--
+	<div class="sidenav">
+	  <a href="#bg">Background</a>
+	  <a href="#md">Method / result</a>
+	  <a href="#th">Some thoughts</a>
+	</div> -->
+
+
+
+<h1>
+	Magnetohydrodynamic Simulation of Plasma-Magnetosphere Interaction
+</h1>
+
+<p>
+	 Solar wind is a stream of plasma, which we can consider it as a stream of electrically conducting fluid. For my master thesis, I performed a simulation of the interaction between the plasma and the Earth's magnetosphere using the magnetohydrodynamics (MHD), which is the computational fluid dynamics coupling with Maxwell's euqations.  Few days ago, I occasionally checked my thesis defense video containing some visualization results of my simulation, where you can see the clear bow shock and tail structure, quite interesting. I still remember I worked day and night on those crazy equations for understanding the math behind the simulation those days. I put some screenshots here. The visualizations are X-Z panel cut in ecliptic coordinate system for the particle pressure and particle density from a simulation of a real space weather event: Halloween solar storm in 2003, solar parameters are from ACE. The solar wind come from left side, the white dot is the Earth.
+ </p>
+ <img src="img/cong_density_particle.png" width="300">
+ <div class='cap'>
+ </div>
+ <img src="img/cong_pressure_particle.png" width="300">
+ <div class='cap'>
+ </div>
+
+<p id='courtesy'>
+		Created by Cong in 2020.
+</p>
+</body>
+</html>

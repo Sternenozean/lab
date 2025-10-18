@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+	<style>
+	.sidenav {
+  width: 110px;
+  position: fixed;
+  z-index: 1;
+  top: 30px;
+  left: 10px;
+  background: white;
+  overflow-x: hidden;
+  padding: 8px 0;
+	font-size: 11px;
+}
+.sidenav a {
+  padding: 3px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 11px;
+  color: #aaaaaa;
+  display: block;
+	align: left;
+}
+.sidenav a:hover {
+  color: ##3176FE;
+}
+	body {
+		line-height: 1.5;
+		padding: 20px;
+		box-shadow: 5px 5px 5px #aaaaaa;
+	    text-align: justify;
+	    color: #555555;
+	    font-family: Arial, Helvetica, sans-serif;
+		font-size:16px;
+        max-width: 650px;
+        min-width: 650px;
+        width: auto;
+        width:650px;
+        margin: auto;
+        bottom: 10px;
+        background-repeat: no-repeat; /* Do not repeat the image */
+        background-image: url('img/bg.jpg');
+        background-size: cover;
+        top: 40px;
+        z-index: -1;
+        display: block;
+	}
+	.color1 {
+	  color: #99ccff;
+	  font-weight: bold;
+	}
+	.color2 {
+	  color: #E4974E;
+	}
+	a {
+	  color: ##377ED9;
+	}
+	a:hover {
+	  color: #222222;
+	}
+	code{
+		background-color: #DAE7F8;
+	}
+	img{
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.article{
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	  font-weight: bold;
+	  font-size: 14px;
+	  pad: 3px;
+	}
+	.article:hover {
+	  color: #333333;
+	  background-color: #eeeeee;
+	  transition-delay: 0.02s;
+	}
+	.list {
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	}
+	.container{
+	  margin-top:120px;
+	}
+	.prettyprint{
+		font-size: 13px;
+		background-color: #EFF4FF;
+	}
+	.cap{
+		max-width: 500px;
+		width: 500px;
+		font-size: 15px;
+		font-style: italic;
+		margin: auto;
+	}
+	#titlebar{
+	  opacity: 1.0;
+	  z-index: 10;
+	  cursor: grab;
+	  background-image: linear-gradient(#e5e4e5, #cecece);
+		max-width: 600px;
+	  min-width: 600px;
+	  height: 22px;
+	  border-radius: 0px;
+	}
+	#frame{
+	  position: absolute;
+	  margin-top: 2px;
+	  background-color: #000000;
+	  opacity: 0.8;
+	  max-width: 600px;
+	  min-width: 600px;
+	  height: 350px;
+	  border-radius: 5px;
+	  z-index: 9;
+	  font-size: 12px;
+	  text-align: left;
+	}
+	#courtesy{
+	  font-size: 12px;
+		font-style: italic;
+	}
+
+	</style>
+</head>
+<body>
+<!--
+	<div class="sidenav">
+	  <a href="#bg">Background</a>
+	  <a href="#md">Method / result</a>
+	  <a href="#th">Some thoughts</a>
+	</div> -->
+
+
+<h1>
+	Software Design and Development for Big Job Array from a HPC User's Perspective 
+</h1>
+
+
+<h3>
+    Background
+</h3>
+
+<p>
+	Imagine that you would need to use HPC to perform inferencing using a deep learning model on 20,000 images, each image is ~ 1 GB and take 1 GPU ~ 1.5 hours, how would you achieve this goal when you have following constrains ? 
+</p>
+<li> The ~ 20 TB image data is stored in one data center, while computing power is in another data center with much fewer disk quota (I think less than 5 TB), high speed network (~ 800 MB - 1 GB /s) is presented between these 2 data centers though. </li>
+<li> Maximum wall clock of a slurm job is 24 hours. </li>
+<li> Maximum number of submitted job at the same time is limited (20 I think).</li>
+
+<p>
+This is a real situation that I met in my previous work (a big data deep lerning probject), to my best knowledge there is no pre-existed solution for this kind of big job array problem. The particular difficulties include 1. understanding the computation status for each every image (which I will call it mini job in the rest of this blog), meaning it will be difficult to know if there is data error, if the computation ended abnormally or finished successfully for a specific input image and overview; and 2. input parameters handling for slurm job scritp.  In order to solve this issue, I designed and implemented a toolchain that can help me handle the big job array with quite high automation degree, making this project possible. </p>
+
+<p>In this blog, I would like to demonstrate it, however I would like to avoid a lengthy article, so the demonstration can only be very breif, hopefully it can still help some people a little.
+</p>
+
+
+<h4>Design and develop a directory and file based database (<CODE>NOSQL</CODE>-alike)</h4>
+
+<p>Firstly, lets thinks about how to understand each job status when you have so many mini jobs. Yes, the key point is design a database, which can also pave the way for the automation later. One stone, two birds. A <code>SQL</code> database ? Probably not, as it would requir ssh network in this case, meaning it is unportable, needless to mention that most of the data center only provide very limited even no inter-node ssh connectoin for user. So I designed a database consists of <code>json</code> files created for each mini job. These <code>json</code> files will be put into different directories to build pools depend on their current status for proceeding to next steps.</p>
+	
+<p>This <code>directory/file</code> based database design can already allow us to easily solve the second  problem (yes I like to solve problems simultaneously) when we already have different job pools, what we need is simply let our computational code (in my case, <code>Python</code>) to grab one itself. For example, in my case, I write <code>json</code> I/O function to parse and lock the information of the input data, add a random function to map it to the job pool to grab a job, loop this process for 24 hours, then all we need to do is simply submit the maximumlly allowed slurm jobs with exactly the same script. Depends on the number of GPUs each script allocate, in my case 4, so I will be able to easily have maxumim 80 input data ready for computation at the same time by submitting one static script.</p>	
+	
+<img src="img/database.jpg" width="500">
+<div class='cap'>
+This figure demonstrates design and implementation of the directory/file based database.
+</div>
+
+<h3> Job controller and viewer </h3>
+<p>
+	 As mentioned previously, I need to transfer the data over the high speed network first, here the solution is using <code>GLOBUS</code>, then generate the database, perform the computation, finish the postprocessing and so on. So you can see the complete workflow consists of quite some steps. With the spirit of automatize everything, I develop a tool, a job controller to run the complete workflow easily. The controller is running at server side, so I wrote with <code>C</code> in a simple UI, which I can simply run tasks with  parameters. 
+</p>
+
+<p>
+	The controller and will allows me to transfer 1000 image data each time to the computational data center to fit the quota, each time it only take half a day, in total, I only need to run 20 times, and it can run in the background.
+</p>
+
+
+<img src="img/job-controller.png" width="300">
+
+<div class='cap'>
+The job controller running on server side, easily for me to conduct complete workflow.  
+</div>
+
+<p>
+	In addition, in order to view the complete job status and my computational resources quota in real time, I also developed a job viewer running on client side as show in figure below. 
+</p>
+
+<img src="img/job-viewer.jpg" width="650">
+<div class='cap'>
+The job viewer on client side. It can show the file transportation status, computational status including success, running, remaining and failure, my current computational quota (CPU / DISK quota). And what really makes me proud of is, it can visualize the computational result (the colourful areas). From the job viewer you can see that the test run already finished 10% of the work. 
+</div>
+
+
+<h3>
+    Final thought
+</h3>
+<p>
+This is a rather personal project I used my spare time to work on during 2-3 weeks, which I think it is rather handy for my work. This design might be not only useful for me, but also for the big job arry in general.
+</p>
+
+<p id='courtesy'>
+		Created by Cong L. in 2020.
+</p>
+</body>
+</html>

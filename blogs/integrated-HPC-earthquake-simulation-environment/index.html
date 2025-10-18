@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!-- copy right: Cong Luo -->
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+	<style>
+	.sidenav {
+	width: 110px;
+	position: fixed;
+	z-index: 1;
+	top: 30px;
+	left: 10px;
+	background: white;
+	overflow-x: hidden;
+	padding: 8px 0;
+	font-size: 11px;
+	}
+	.sidenav a {
+	padding: 3px 8px 6px 16px;
+	text-decoration: none;
+	font-size: 11px;
+	color: #aaaaaa;
+	display: block;
+	align: left;
+	}
+	.sidenav a:hover {
+	color: ##3176FE;
+	}
+	body {
+		line-height: 1.5;
+		padding: 20px;
+		box-shadow: 5px 5px 5px #aaaaaa;
+	  	text-align: justify;
+	  	color: #555555;
+	  	font-family: Arial, Helvetica, sans-serif;
+		font-size:16px;
+		max-width: 650px;
+		min-width: 650px;
+		width: auto;
+		width:650px;
+		margin: auto;
+		bottom: 10px;
+		background-repeat: no-repeat; /* Do not repeat the image */
+		background-image: url('img/bg.jpg');
+		background-size: cover;
+		top: 40px;
+		z-index: -1;
+		display: block;
+	}
+
+	.color1 {
+	  color: #99ccff;
+	  font-weight: bold;
+
+	}
+	.color2 {
+	  color: #E4974E;
+	}
+
+	a {
+	  color: ##377ED9;
+	}
+
+	a:hover {
+	  color: #222222;
+	}
+
+	code{
+		background-color: #DAE7F8;
+	}
+	img{
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.article{
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	  font-weight: bold;
+	  font-size: 14px;
+	  pad: 3px;
+	}
+	.article:hover {
+	  color: #333333;
+	  background-color: #eeeeee;
+	  transition-delay: 0.02s;
+	}
+	.list {
+	  margin: auto;
+	  max-width: 500px;
+	  margin-top:10px;
+	}
+	.container{
+	  margin-top:120px;
+	}
+	.prettyprint{
+		font-size: 13px;
+		background-color: #EFF4FF;
+	}
+	.cap{
+		max-width: 500px;
+		width: 500px;
+		font-size: 15px;
+		font-style: italic;
+		margin: auto;
+	}
+	#titlebar{
+	  opacity: 1.0;
+	  z-index: 10;
+	  cursor: grab;
+	  background-image: linear-gradient(#e5e4e5, #cecece);
+		max-width: 600px;
+	  min-width: 600px;
+	  height: 22px;
+	  border-radius: 0px;
+	}
+	#frame{
+	  position: absolute;
+	  margin-top: 2px;
+	  background-color: #000000;
+	  opacity: 0.8;
+	  max-width: 600px;
+	  min-width: 600px;
+	  height: 350px;
+	  border-radius: 5px;
+	  z-index: 9;
+	  font-size: 12px;
+	  text-align: left;
+	}
+	#courtesy{
+	  font-size: 12px;
+		font-style: italic;
+	}
+	</style>
+</head>
+<body>
+
+	<!-- <div class="sidenav">
+	  <a href="#bg">Background</a>
+	  <a href="#md">Method / result</a>
+	  <a href="#th">Some thoughts</a>
+	</div> -->
+
+
+
+<h1>
+	An Integrated Web-based Earthquake Simulation Environment
+</h1>
+
+<p>
+ Numerical simulation of 3D seismic wave propagation is an important tool for earthquake studies. However, developing the numerical schemes for solving the partial differential equations is not the only difficult part. The data acquisition, preprocessing, mesh generation, visualization etc, relies on various tools and expert-level knowledges, which potentially formed an invisible obstacle for the researchers to carry out the simulation for studying realistic earthquakes. In this blog, I would like to briefly demonstrate some aspects of an integrated web and HPC based 3D wave propagation simulation environment. </p>
+
+
+<p>
+In order to significantly simplify the user taskflow, an automated processing pipeline from data acquisition, model generation to the simulation on the server side is developed (which is another topic maybe I will cover in another blog).
+</p>
+
+<img src="img/user_taskflow.png" width="400">
+<div class='cap'>
+The user taskflow of this platform, which is already significantly simplified compared with conventional one. 
+</div>
+
+
+<p>
+In addition, it featured an WYSIWYW environment for realtime visualization for some steps in both preprocessing and postprocessing (an OpenGL ES 2.0 capable GPU is required). The figure below illustrates an user interface for building earth model at the user given region.
+</p>
+
+<img src="img/frontend.png" width="520">
+<div class='cap'>
+User can select a study areas at global scale by giving coordinates (backbone data is SRTM with ~100 meter resolution), generate the mesh, customize the simulation parameter, submitting the HPC job, retrieve the results directly via a supported browser (high resolution velocity model is not integrated, as usually it is acquired from field study, but can be uploaded for automated  processing).
+</div>
+
+<p>
+	From the user perspective, once the simulation is finished, they can download the simulation results, or if needed, the 3D results can also be interactively visualized as illustrated below.
+</p>
+
+<img src="img/visualization.png" width="500">
+<div class='cap'>
+Interactive visualization of the 3D velocity field of the simulated seismic event at different time points. One philosophy for developing this visualization tool is: only extracting the useful areas for visualization (i.e., the areas where velocity is not zero), hence the complete 3D wavefield can be directly visualized, no more slicing is needed which we can usually found in traditional visualization method for 3D volume.
+</div>
+
+
+
+
+
+
+
+
+<h4><a name='th'>Some thoughts</a></h4>
+<p>
+Some of the simulation codes in geophysics community would require multiple computing nodes (might be up to few hundreds of nodes) for a physically meanful simulation. However, unlike simulation itself, for preprocessing and postprocessing, the computational cost is not very high but would require fast processing for realtime or near-realtime user ineraction, the slurm queueing time hence should be avoided, how to implement this in a complete architecture might be too complicated and we will not discuss here, as it might beyond the scope of this blog.
+</p>
+<p>
+Integrated web-based simulation environment (e-science) development was a popular research topic amoung some computationally oriented community few years ago. I know that there was an EU funded research project worked by 3-4 universities, aims at delivering a similar solution for earthquake simulation, and there might be another project from Caltech. Science and technology keep envolving, and it seems many spotlight gradually moved away from e-science topics to some other more popular fields nowadays (such as deep learning), still, I hope more e-science projects can emerge and get continuous development to facilitate  different research disciplines. 
+</p>
+
+
+
+
+<p id='courtesy'>
+		Created by Cong in 2020.
+</p>
+</body>
+</html>
