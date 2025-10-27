@@ -103,7 +103,7 @@
 	display: flex;      
 	flex-wrap: wrap;
 	justify-content: center; /* Optional: centers the images horizontally */
-	gap: 40px;       /* Optional: adds  40px space between the images */
+	gap: 0px;       /* Optional: adds  40px space between the images */
 	}
 
 	.list {
@@ -230,10 +230,10 @@ torch.set_num_threads(1)
 
 <p>OK, now we enter the domain that allow us to develop our own parallelization code. A very natural mind came up to me is spawning 48 processes (yes, processes insteads of threads), so that each process and its corresponding memory space is independent (yes, sounds like CPU-RAM affinity). In order to do so, after loading the image into numpy array, we can split the array into 48 partitions, and assign each partition to a single CPU to isolate the memory space.</p>
 
-<div class="image-container">
+<div class="image-container"> 
     <img src="img/cpu_ram.png", width = "300">
-    <img src="img/tk_demo.png", width="300", height='750', class = 'rotate-img'>
-  </div>
+    <img src="img/tk_demo.png", width="300">
+</div> 
 
 <div class='cap'>
 Left: partitions of the input image, color indicates the index of CPU [0-47], the black area indicates where no valid data in the original input.
