@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lab/css/blog.css">
+  <style>body { background-image: url('img/bg.jpg'); background-repeat: no-repeat; background-size: cover; }</style>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <title>Big-Data-Driven Deep Learning for Large-Scale Inference</title>
+</head>
+<body class="has-sidenav">
+
+<nav class="sidenav">
+  <a class="sidenav-home" href="/lab/">Home</a>
+  <a href="#bg">Background</a>
+  <a href="#md">Big data</a>
+  <a href="#perf">Performance</a>
+  <a href="#th">Visualizations</a>
+</nav>
+
+<h1>Big-Data-Driven Deep Learning for Large-Scale Inference</h1>
+
+<h4 id="bg">Background</h4>
+<p>
+I have been writing a research paper about a project that trains a deep-learning model on a large satellite-image dataset to classify ground features across major land areas. The first stage of the project is complete and ready for publication. I was the main contributor, responsible for big-data processing (generating more than one million image patches from 8.6 TB of remote-sensing data), resolving scientific and technical issues during HPC training and inference, and scientific full-stack development. While preparing the paper, I generated several interesting supplementary figures; this blog presents those figures and only my own contributions.
+</p>
+<h4 id="md">Big data</h4>
+<p>Some interesting facts about the data.</p>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-l36l">Input data volume</th>
+    <th class="tg-l36l">~ 8.6 TB</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-l36l">Scale</td>
+    <td class="tg-l36l">Global</td>
+  </tr>
+  <tr>
+    <td class="tg-l36l">Output DL samples</td>
+    <td class="tg-l36l">~ 1.3 M patches</td>
+  </tr>
+  <tr>
+    <td class="tg-l36l">Network</td>
+    <td class="tg-l36l">customized resnet</td>
+  </tr>
+</tbody>
+</table>
+<figure class="figure figure-wide">
+  <img src="img/patch3d.png" width="600" alt="Dataset visualization">
+  <figcaption class="cap">Visualization of part of the dataset. The axes represent the input region and class index.</figcaption>
+</figure>
+<p>
+I used Python's multiprocessing on a 48-core machine to process the data. A key issue was how to organize the generated training samples on disk, because PyTorch and TensorFlow can experience substantially reduced training throughput when handling more than one million individual samples. I split the training dataset into multiple <code>H5</code> files to maintain normal training speed. This approach requires proper indexing of the samples in each H5 file so that the data generator can sample them randomly.
+</p>
+<h4 id="perf">Performance</h4>
+<p>Below is an unnormalized confusion matrix for the trained model evaluated on the test set.</p>
+<figure class="figure">
+  <img src="img/cf.png" width="550" alt="Confusion matrix">
+</figure>
+<figure class="figure figure-wide">
+  <img src="img/acf1.png" width="600" alt="F1 and accuracy">
+  <figcaption class="cap">The F1-score and accuracy are plotted against the number of training samples for each class.</figcaption>
+</figure>
+<h4 id="th">Some interactive fun visualizations</h4>
+<figure class="figure figure-maps">
+  <div class="map-row">
+    <iframe src="./munich/index.html" height="300" width="300" title="Munich inference map"></iframe>
+    <iframe src="./san/index.html" height="300" width="300" title="San Francisco inference map"></iframe>
+  </div>
+  <figcaption class="cap">Inference results for the Munich area (left) and San Francisco area (right) on a simple interactive map. Recall/precision were 0.93/0.92 and 0.93/0.94, respectively.</figcaption>
+</figure>
+<p>Merry Christmas!</p>
+<p id="courtesy">Created by Cong in 12.2020. Merry Christmas</p>
+<script src="/js/goatcounter-config.js"></script>
+<script src="/js/goatcounter.js"></script>
+
+
+<script src="/lab/js/goatcounter-config.js"></script>
+<script src="/lab/js/goatcounter.js"></script>
+</body>
+</html>

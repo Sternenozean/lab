@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lab/css/blog.css">
+  <style>body { background-image: url('img/bg.jpg'); background-repeat: no-repeat; background-size: cover; }</style>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <title>Empirical Analysis and Benchmarking of Gate-based Quantum Neural Networks (QNNs)</title>
+</head>
+<body class="has-sidenav">
+
+<nav class="sidenav">
+  <a class="sidenav-home" href="/lab/">Home</a>
+  <a href="#rep">Validation</a>
+  <a href="#mlp">Baseline Comparison</a>
+  <a href="#qlstm">Quantum LSTM</a>
+</nav>
+
+<h1>Empirical Analysis and Benchmarking of Gate-based Quantum Neural Networks (QNNs)</h1>
+
+<h4 id="rep">Algorithmic Replication & Verification</h4>
+<p>
+This section focuses on the empirical replication and validation of foundational architectures in Variational Quantum Algorithms (VQAs). A definitive milestone in this domain is the <strong>Quantum Circuit Learning (QCL)</strong> framework proposed by Kosuke Mitarai et al. This work established the theoretical groundwork for employing Parameterized Quantum Circuits (PQCs) as universal function approximators—the quantum analogue to classical feedforward neural networks—leveraging the <strong>parameter-shift rule</strong> for exact, analytical gradient evaluation. The replicated benchmarks across various execution backends are illustrated below.
+</p>
+<figure class="figure">
+  <img src="img/qcl_original_result.png" width="400" alt="Original QCL results">
+  <figcaption class="cap">Reference target functions and regression performance as presented in the seminal QCL paper.</figcaption>
+</figure>
+<figure class="figure">
+  <img src="img/reproduce_results.png" width="400" alt="Reproduced QCL results">
+  <figcaption class="cap">Replicated training dynamics evaluated across an ideal statevector simulator and a noise-modeled hardware backend.</figcaption>
+</figure>
+<figure class="figure">
+  <img src="img/iqm_results.png" width="300" alt="IQM QPU results">
+  <figcaption class="cap">Hardware validation executed on a physical superconducting <strong>QPU</strong> (IQM architecture). Due to allocation limits and cloud execution time budgets, optimization was conducted sequentially on prioritized target signals.</figcaption>
+</figure>
+<h4 id="mlp">Comparative Analysis with Classical Baselines (MLP)</h4>
+<p>
+  To establish a rigorous baseline, a classical Multilayer Perceptron (MLP) with a 1–5–5–1 architecture was trained under identical optimization targets. The comparative tracking of training and testing loss trajectories underscores the convergence characteristics and expressivity differences between the classical and quantum paradigms.
+</p>
+<figure class="figure figure-wide">
+  <img src="img/basis_function_1a.png" width="600" alt="MLP vs QNN comparison">
+  <figcaption class="cap">Comparison of training trajectories between the classical MLP and the Variational QNN. Ideal statevector simulation was utilized to isolate pure algorithmic behavior from hardware-induced decoherence noise.</figcaption>
+</figure>
+<h4 id="qlstm">Quantum LSTM: Evaluating Recurrent Architectures on Real-World Time-Series</h4>
+<p>
+  While several parameterized Ansätze have been proposed for temporal data modeling, practical evaluations on highly stochastic, non-linear real-world datasets remain sparse. To bridge this gap, this initiative implements the Quantum Long Short-Term Memory (QLSTM) framework and subjects it to empirical stress-testing using the Financial Times Stock Exchange (FTSE) index, cross-benchmarking its predictive accuracy and training stability directly against a classical LSTM baseline.
+</p>
+<figure class="figure figure-wide">
+  <img src="img/ftse_results.png" width="600" alt="FTSE LSTM results">
+  <figcaption class="cap">Time-series inference execution on the historical FTSE dataset (N = 5,000 data points). Both classical and quantum recurrent models were subjected to identical hyperparameter tuning and optimization pipelines.</figcaption>
+</figure>
+<p>Further experimental configurations and scaling analyses will follow.</p>
+<p id="courtesy">Created by Cong in 2025. All rights reserved.</p>
+<script src="/js/goatcounter-config.js"></script>
+<script src="/js/goatcounter.js"></script>
+
+
+<script src="/lab/js/goatcounter-config.js"></script>
+<script src="/lab/js/goatcounter.js"></script>
+</body>
+</html>

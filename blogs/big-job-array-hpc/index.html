@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lab/css/blog.css">
+  <style>body { background-image: url('img/bg.jpg'); background-repeat: no-repeat; background-size: cover; }</style>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <title>Software Design and Development for Big Job Array from a HPC User&#39;s Perspective</title>
+</head>
+<body class="has-sidenav">
+
+<nav class="sidenav">
+  <a class="sidenav-home" href="/lab/">Home</a>
+  <a href="#bg">Background</a>
+  <a href="#db">Database</a>
+  <a href="#jc">Job controller</a>
+  <a href="#th">Final thought</a>
+</nav>
+
+<h1>Software Design and Development for Big Job Array from a HPC User&#39;s Perspective</h1>
+
+<h3 id="bg">Background</h3>
+<p>
+Consider a high-performance computing (HPC) orchestration challenge: executing deep learning inference across a massive dataset of 20,000 high-resolution images. Each payload is roughly 1 GB, with an estimated processing time of 1.5 GPU-hours per image. Orchestrating this distributed workload implies navigating the following severe infrastructural constraints:
+</p>
+<ul>
+  <li><strong>Data-Compute Locality Asymmetry:</strong> The 20 TB dataset is hosted in a remote data center, whereas the target HPC cluster resides in a separate network domain with a strict storage quota cap of 5 TB. An 800 MB/s to 1 GB/s high-speed network interconnects the two facilities.</li>
+  <li><strong>Temporal Scheduling Limits:</strong> The Slurm scheduler enforces a hard wall-clock time limit of 24 hours per batch allocation.</li>
+  <li><strong>Concurrency Throttling:</strong> Active queue slots are constrained, capping simultaneous job submissions to a maximum of 20 concurrent allocations.</li>
+</ul>
+<p>
+This scenario reflects a critical bottleneck encountered during a large-scale deep learning initiative. Off-the-shelf orchestration tools fall short when handling massive, fine-grained job arrays under such asymmetric storage and scheduling constraints. The core engineering complexities involve: (1) capturing granular execution states (identifying specific data corruption, tracking abnormal process terminations, or verifying successful completions for each "mini-job"), and (2) dynamically managing runtime parameter injection within monolithic Slurm batch scripts. To resolve this, I designed and implemented a decoupled, highly automated state-machine toolchain to streamline mass-scale array execution.
+</p>
+<p>In this article, I present a brief technical overview of the architectural design patterns used to bypass these infrastructure bottlenecks.</p>
+<h3 id="db">Lightweight, Distributed File-Based NoSQL Database Architecture</h3>
+<p>To monitor states across thousands of asynchronous tasks, establishing a reliable state-management layer is paramount. Traditional relational databases (SQL) are highly impractical in this context, as most Tier-0 HPC environments restrict inbound/outbound cross-node SSH connections and lack centralized database access layers for compute nodes. </p>
+<p>To circumvent this network isolation, I engineered a serverless, directory-and-file-based NoSQL-like state engine using atomic JSON manifests. Each mini-job maps to an isolated JSON document containing its task parameters. State transitions (e.g., <code>Pending</code>, <code>Running</code>, <code>Completed</code>, <code>Failed</code>) are executed by atomically moving these manifests across dedicated directory pools.</p>
+<p>This decoupled design inherently solves the dynamic parameter-injection bottleneck. Instead of statically hardcoding parameters at submission time, the runtime Python application on the worker nodes autonomously polls for and acquires an exclusive file lock on an available JSON task from the active pool. By encapsulating this consumer loop within a 24-hour Slurm allocation—running across 4 GPUs per allocation—submitting the maximum of 20 identical, static Slurm batch scripts orchestrates up to 80 parallel tensor pipelines simultaneously without additional scheduling or metadata overhead.</p>
+<figure class="figure">
+  <img src="img/database.jpg" width="500" alt="Directory/file database">
+  <figcaption class="cap">Architectural design and transactional state transitions of the directory/file-based state engine.</figcaption>
+</figure>
+<h3 id="jc">Workflow Controller and (near) Real-Time Telemetry Viewer</h3>
+<p>
+The complete end-to-end execution lifecycle involves high-throughput data migration via Globus, state database initialization, parallel computation execution, and post-processing aggregation. Adhering to an automation-first engineering methodology, I developed a server-side workflow daemon written in C, featuring a lean interface to manage parameter-driven task execution and background staging.
+</p>
+<p>
+The controller schedules staggered, automated data ingestions (staging 1,000 images per batch) to continuously balance the compute cluster’s 5 TB storage quota. The entire 20 TB ingestion pipeline runs asynchronously in the background across 20 automated iterations, completely eliminating manual synchronization overhead.
+</p>
+<figure class="figure">
+  <img src="img/job-controller.png" width="300" alt="Job controller">
+  <figcaption class="cap">The server-side task daemon managing multi-stage background processes and execution pipelines.</figcaption>
+</figure>
+<p>
+To gain real-time visibility into cluster utilization and job lifecycles, I constructed a client-side telemetry viewer.
+</p>
+<figure class="figure figure-wide">
+  <img src="img/job-viewer.jpg" width="650" alt="Job viewer">
+  <figcaption class="cap">The client-side job viewer shows file-transfer status, computational status (success, running, remaining, and failure), and the current computational quota (CPU and disk). It can also visualize the computational results (the coloured areas). The test run shown here has completed 10% of the work.</figcaption>
+</figure>
+<h3 id="th">Final thought</h3>
+<p>
+Engineered as an agile architectural prototype during a compressed two-week sprint, this toolchain successfully transformed a high-latency, manual operations nightmare into a resilient, high-throughput production pipeline. The underlying design pattern—decoupling cluster state management into file-based atomic transactions—offers a portable and elegant paradigm for orchestrating massive distributed job arrays across any resource-constrained HPC infrastructure.
+</p>
+<p id="courtesy">Created by Cong L. in 2020.</p>
+<script src="/js/goatcounter-config.js"></script>
+<script src="/js/goatcounter.js"></script>
+
+
+<script src="/lab/js/goatcounter-config.js"></script>
+<script src="/lab/js/goatcounter.js"></script>
+</body>
+</html>

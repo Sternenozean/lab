@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lab/css/blog.css">
+  <style>body { background-image: url('img/bg.jpg'); background-repeat: no-repeat; background-size: cover; }</style>
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <title>An Integrated Web-based Earthquake Simulation Environment</title>
+</head>
+<body class="has-sidenav">
+
+<nav class="sidenav">
+  <a class="sidenav-home" href="/lab/">Home</a>
+  <a href="#bg">Background</a>
+  <a href="#workflow">Workflow</a>
+  <a href="#platform">Platform</a>
+  <a href="#viz">Visualization</a>
+  <a href="#th">Thoughts</a>
+</nav>
+
+<h1>An Integrated Web-based Earthquake Simulation Environment</h1>
+
+<h4 id="bg">Background</h4>
+<p>
+  Numerical simulation of 3D seismic-wave propagation is an important tool for earthquake studies. However, developing numerical schemes to solve the governing partial differential equations is not the only challenge. Data acquisition, preprocessing, mesh generation, and visualization rely on diverse tools and expert knowledge, potentially creating an invisible barrier to simulating realistic earthquakes. In this blog, I briefly demonstrate aspects of an integrated web- and HPC-based 3D wave-propagation simulation environment.
+</p>
+<p>
+To simplify the user workflow, I developed an automated server-side processing pipeline from data acquisition and model generation to simulation execution. I may cover this pipeline in a future post.
+</p>
+<h4 id="workflow">User workflow</h4>
+<figure class="figure">
+  <img src="img/user_taskflow.png" width="400" alt="User taskflow">
+  <figcaption class="cap">The platform's user workflow, which is substantially simplified compared with a conventional workflow.</figcaption>
+</figure>
+<h4 id="platform">Web platform</h4>
+<p>
+In addition, it featured a WYSIWYG environment for real-time visualization during selected preprocessing and post-processing steps (an OpenGL ES 2.0-capable GPU is required). The figure below illustrates a user interface for building an Earth model in a user-defined region.
+</p>
+<figure class="figure">
+  <img src="img/frontend.png" width="520" alt="Frontend UI">
+  <figcaption class="cap">Users can select a study area at the global scale by providing coordinates (the base data are SRTM at ~100 m resolution), generate the mesh, customize simulation parameters, submit an HPC job, and retrieve results directly in a supported browser. A high-resolution velocity model is not integrated because it is usually acquired from field studies, but it can be uploaded for automated processing.</figcaption>
+</figure>
+<h4 id="viz">Visualization</h4>
+<p>
+  From the user perspective, once the simulation is finished, they can download the simulation results, or if needed, the 3D results can also be interactively visualized as illustrated below.
+</p>
+<figure class="figure">
+  <img src="img/visualization.png" width="500" alt="3D visualization">
+  <figcaption class="cap">Interactive visualization of the 3D velocity field of the simulated seismic event at different time points. One philosophy for developing this visualization tool is: only extracting the useful areas for visualization (i.e., the areas where velocity is not zero), hence the complete 3D wavefield can be directly visualized, no more slicing is needed which we can usually find in traditional visualization methods for 3D volume.</figcaption>
+</figure>
+<h4 id="th">Some thoughts</h4>
+<p>
+Some of the simulation codes in geophysics community would require multiple computing nodes (might be up to few hundreds of nodes) for a physically meaningful simulation. However, unlike simulation itself, for preprocessing and postprocessing, the computational cost is not very high but would require fast processing for realtime or near-realtime user interaction, the slurm queueing time hence should be avoided, how to implement this in a complete architecture might be too complicated and we will not discuss here, as it may be beyond the scope of this blog.
+</p>
+<p>
+Integrated web-based simulation environment (e-science) development was a popular research topic among some computationally oriented community few years ago. I know that there was an EU funded research project worked by 3-4 universities, aims at delivering a similar solution for earthquake simulation, and there might be another project from Caltech. Science and technology keep evolving, and it seems many spotlight gradually moved away from e-science topics to some other more popular fields nowadays (such as deep learning), still, I hope more e-science projects can emerge and get continuous development to facilitate different research disciplines.
+</p>
+<p id="courtesy">Created by Cong in 2020.</p>
+<script src="/js/goatcounter-config.js"></script>
+<script src="/js/goatcounter.js"></script>
+
+
+<script src="/lab/js/goatcounter-config.js"></script>
+<script src="/lab/js/goatcounter.js"></script>
+</body>
+</html>

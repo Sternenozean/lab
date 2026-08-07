@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="/lab/css/home.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <title>SternenOzean Lab</title>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+  function startTime() {
+    var today = new Date();
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    var s = today.getSeconds();
+    m = checkTime(m);
+    s = checkTime(s);
+    document.getElementById('time').innerHTML = '&nbsp; Local time:  ' +  date + ' ' +
+    h + ":" + m + ":" + s;
+    setTimeout(startTime, 500);
+  }
+
+  function checkTime(i) {
+    if (i < 10) { i = "0" + i; }
+    return i;
+  }
+
+  function projectOnGlobe(lat, lon) {
+    var r = 22;
+    var cx = 28 + (lon / 180) * r;
+    var cy = 28 - (lat / 90) * r;
+    return { x: Math.max(6, Math.min(50, cx)), y: Math.max(6, Math.min(50, cy)) };
+  }
+
+  function normalizeGeo(data) {
+    if (!data || data.lat == null || data.lon == null) {
+      return null;
+    }
+    return data;
+  }
+
+  function fetchGeoFromIpapi() {
+    return fetch('https://ipapi.co/json/')
+      .then(function(res) {
+        if (!res.ok) { throw new Error('ipapi'); }
+        return res.json();
+      })
+      .then(function(d) {
+        if (d.error) { throw new Error('ipapi'); }
+        return normalizeGeo({
+          lat: d.latitude,
+          lon: d.longitude,
+          city: d.city,
+          countryCode: d.country_code || d.country
+        });
+      });
+  }
+
+  function fetchGeoFromGeojs() {
+    return fetch('https://get.geojs.io/v1/ip/geo.json')
+      .then(function(res) {
+        if (!res.ok) { throw new Error('geojs'); }
+        return res.json();
+      })
+      .then(function(d) {
+        return normalizeGeo({
+          lat: parseFloat(d.latitude),
+          lon: parseFloat(d.longitude),
+          city: d.city,
+          countryCode: d.country_code
+        });
+      });
+  }
+
+  function fetchGeoFromIpwho() {
+    return fetch('https://ipwho.is/')
+      .then(function(res) {
+        if (!res.ok) { throw new Error('ipwho'); }
+        return res.json();
+      })
+      .then(function(d) {
+        if (!d.success) { throw new Error('ipwho'); }
+        return normalizeGeo({
+          lat: d.latitude,
+          lon: d.longitude,
+          city: d.city,
+          countryCode: d.country_code
+        });
+      });
+  }
+
+  function fetchVisitorGeo() {
+    return fetchGeoFromGeojs()
+      .catch(function() { return fetchGeoFromIpwho(); })
+      .catch(function() { return fetchGeoFromIpapi(); });
+  }
+
+  var visitorMap = null;
+
+  function renderVisitorMap(lat, lon, mapEl) {
+    if (typeof L === 'undefined' || !mapEl) {
+      return;
+    }
+
+    if (visitorMap) {
+      visitorMap.remove();
+      visitorMap = null;
+    }
+
+    visitorMap = L.map(mapEl, {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      worldCopyJump: true
+    }).setView([20, 0], 1);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      minZoom: 1,
+      maxZoom: 4,
+      noWrap: false
+    }).addTo(visitorMap);
+
+    if (lat != null && lon != null) {
+      L.circleMarker([lat, lon], {
+        radius: 5,
+        color: '#8EFF35',
+        fillColor: '#8EFF35',
+        fillOpacity: 0.85,
+        weight: 1
+      }).addTo(visitorMap);
+    }
+
+    setTimeout(function() { visitorMap.invalidateSize(); }, 150);
+  }
+
+  function initVisitorLocate() {
+    var label = document.getElementById('visitor-label');
+    var pin = document.getElementById('globe-pin');
+    var mapEl = document.getElementById('visitor-map');
+
+    pin.style.opacity = '0';
+    renderVisitorMap(null, null, mapEl);
+
+    fetchVisitorGeo()
+      .then(function(data) {
+        if (!data) {
+          label.textContent = 'location unknown';
+          return;
+        }
+        var place = data.city
+          ? data.city + ', ' + data.countryCode
+          : String(data.countryCode || '');
+        label.textContent = '\u2248 ' + place;
+
+        var p = projectOnGlobe(data.lat, data.lon);
+        pin.setAttribute('cx', p.x);
+        pin.setAttribute('cy', p.y);
+        pin.style.opacity = '1';
+
+        renderVisitorMap(data.lat, data.lon, mapEl);
+      })
+      .catch(function() {
+        label.textContent = 'location unavailable';
+      });
+  }
+
+  window.onload = function() {
+    startTime();
+    initVisitorLocate();
+  };
+  </script>
+
+  <script src="/lab/js/goatcounter-config.js"></script>
+  <script src="/lab/js/goatcounter.js"></script>
+</head>
+
+<body style="background-image: url('/lab/img/bg.jpg'); background-repeat: no-repeat; background-size: cover;">
+
+<div class="container">
+<div id="frame">
+
+<div id="titlebar">
+  <div class="circle1">
+    <div class="circle2">
+      <div class="circle3"></div>
+    </div>
+  </div>
+</div>
+
+<div class="terminal-body">
+  <div class="terminal-header">
+    <div id="time"></div>
+    <div class="terminal-octa-wrap" aria-hidden="true">
+      <div class="terminal-octahedron" role="img" aria-label="Decorative octahedron">
+        <div class="terminal-octa-face f1"></div>
+        <div class="terminal-octa-face f2"></div>
+        <div class="terminal-octa-face f3"></div>
+        <div class="terminal-octa-face f4"></div>
+        <div class="terminal-octa-face lower f5"></div>
+        <div class="terminal-octa-face lower f6"></div>
+        <div class="terminal-octa-face lower f7"></div>
+        <div class="terminal-octa-face lower f8"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="list">
+    Hi, I'm Cong. I work at the intersection of <span class="color1">HPC, Deep Learning, and Quantum Computing</span>, with an active research focus on Quantum Machine Learning (QML).
+  </div>
+
+  <div class="list">
+    Active since 2020, this blog (initially on GitLab) is my personal playground for documenting engineering breakthroughs, optimization notes, and research thoughts. Because great ideas and nasty bugs don't wait for office hours, many of these insights are captured and debugged on the fly—often drafted on a tablet while traveling 🚄.
+  </div>
+
+  <div class="list">
+    If you are currently wrestling with scaling bottlenecks, distributed AI, or hybrid quantum-classical frameworks, I hope these notes save you some debugging time. [All content featured here represents my independent work and contains no job-related confidential materials]
+  </div>
+  <div class="article">
+    <a href="/lab/blogs/qcl_reproduce_QNN/">Empirical Analysis and Benchmarking of Gate-based Quantum Neural Networks (QNNs)</a>
+  </div>
+  <div class="article">
+    <a href="/lab/blogs/cpu-hpc-pytorch/">Improving Parallelization Performance for CPU-Based PyTorch</a>
+  </div>
+  <div class="article">
+    <a href="/lab/blogs/integrated-HPC-earthquake-simulation-environment/">An Integrated Web-based Earthquake Simulation Environment</a>
+  </div>
+  <div class="article">
+    <a href="/lab/blogs/magnetohydrodynamic-simulation-solrwind/">Magnetohydrodynamic Simulation of Plasma-Magnetosphere Interaction</a>
+  </div>
+  <div class="article">
+    <a href="/lab/blogs/dl-satellite-classification-pt1/">Big-Data-Driven Deep Learning for Large-Scale Inference</a>
+  </div>
+  <div class="article">
+    <a href="/lab/blogs/big-job-array-hpc/">Software Design and Development for Big Job Array from a HPC User&#39;s Perspective</a>
+  </div>
+
+  <div class="visitor-locate" aria-label="Your approximate location">
+    <div class="visitor-globe" aria-hidden="true" title="Your approximate location">
+      <svg class="visitor-globe-svg" viewBox="0 0 56 56">
+        <defs>
+          <clipPath id="globe-clip">
+            <circle cx="28" cy="28" r="24"/>
+          </clipPath>
+        </defs>
+        <g clip-path="url(#globe-clip)">
+          <circle cx="28" cy="28" r="24" class="globe-ocean"/>
+          <ellipse cx="28" cy="28" rx="24" ry="7" class="globe-line"/>
+          <ellipse cx="28" cy="28" rx="7" ry="24" class="globe-line"/>
+          <line x1="4" y1="28" x2="52" y2="28" class="globe-line"/>
+        </g>
+        <circle id="globe-pin" class="globe-pin" cx="28" cy="28" r="3"/>
+      </svg>
+    </div>
+
+    <div class="visitor-map-block">
+      <div id="visitor-map"></div>
+      <p class="visitor-label" id="visitor-label">locating…</p>
+      <p class="visitor-count">
+        <span id="goatcounter-total" class="visitor-stat-num">…</span> visitors
+        <a id="goatcounter-dash" class="visitor-dash" href="#" title="Open analytics dashboard (site owner)" style="display:none"> · stats</a>
+      </p>
+    </div>
+
+    <div class="visitor-bloch-wrap" aria-hidden="true" title="Bloch sphere">
+      <div class="bloch-scene">
+        <div class="bloch-sphere">
+          <div class="bloch-ring bloch-equator"></div>
+          <div class="bloch-ring bloch-meridian-a"></div>
+          <div class="bloch-ring bloch-meridian-b"></div>
+        </div>
+        <span class="bloch-label bloch-label-n">|0&gt;</span>
+        <span class="bloch-label bloch-label-s">|1&gt;</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<p id="courtesy">Creator: Cong L.| All rights reserved. | Background image courtesy of Google.</p>
+<script>
+  initGoatCounterDisplay('goatcounter-total', 'goatcounter-dash');
+</script>
+</body>
+</html>
